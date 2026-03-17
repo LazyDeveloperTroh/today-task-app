@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_todo_item"
     android:gravity="center_vertical"
-    android:minHeight="86dp"
+    android:minHeight="60dp"
     android:orientation="horizontal"
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
