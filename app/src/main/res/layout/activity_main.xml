@@ -55,7 +55,7 @@
             app:itemIconTint="@color/bottom_nav_color"
             app:itemTextColor="@color/bottom_nav_color"
             app:itemIconSize="20dp"
-            app:labelVisibilityMode="selected"
+            app:labelVisibilityMode="labeled"
             app:menu="@menu/menu_bottom_nav" />
     </LinearLayout>
 
