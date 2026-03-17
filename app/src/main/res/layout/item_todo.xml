@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_todo_item"
+    android:gravity="center_vertical"
+    android:minHeight="86dp"
+    android:orientation="horizontal"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <CheckBox
+        android:id="@+id/checkTodo"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:button="@null"
+        android:background="@drawable/bg_checkbox_selector"
+        android:checked="false" />
+
+    <TextView
+        android:id="@+id/tvTodoTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_weight="1"
+        android:text="프로젝트 제안서 검토"
+        android:textColor="#0D1B3D"
+        android:textSize="20sp" />
+</LinearLayout>
