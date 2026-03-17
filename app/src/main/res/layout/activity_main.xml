@@ -54,7 +54,8 @@
             android:background="@android:color/white"
             app:itemIconTint="@color/bottom_nav_color"
             app:itemTextColor="@color/bottom_nav_color"
-            app:labelVisibilityMode="labeled"
+            app:itemIconSize="20dp"
+            app:labelVisibilityMode="selected"
             app:menu="@menu/menu_bottom_nav" />
     </LinearLayout>
 
