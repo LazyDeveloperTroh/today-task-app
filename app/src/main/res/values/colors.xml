@@ -3,4 +3,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="default_background">#F4F5F7</color>
+    <color name="delete_background">#F44336</color>
 </resources>

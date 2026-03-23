@@ -1,18 +1,19 @@
 package com.troh.todaytask
 
+import android.graphics.Canvas
 import android.os.Bundle
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.getSystemService
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.troh.todaytask.databinding.ActivityMainBinding
 import com.troh.todaytask.feature.today.AddTaskBottomSheet
 import com.troh.todaytask.feature.today.TodoItem
@@ -33,6 +34,90 @@ class MainActivity : AppCompatActivity() {
         initRecyclerView()
         initBottomNavigation()
         initListeners()
+        initTouchHelper()
+    }
+
+    private fun initTouchHelper() {
+        val background = ContextCompat.getColor(this, R.color.delete_background).toDrawable()
+        val deleteIcon = ContextCompat.getDrawable(this, R.drawable.ic_delete24)
+
+        val itemTouchHelperCallback = object: ItemTouchHelper.SimpleCallback(0,
+            ItemTouchHelper.LEFT) {
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHold: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ) : Boolean {
+                return false
+            }
+
+            override fun onSwiped(
+                viewHolder: RecyclerView.ViewHolder,
+                direction: Int
+            ) {
+                val position = viewHolder.adapterPosition
+                val removedItem = todoList[position]
+
+                todoList.removeAt(position)
+                todoAdapter.notifyItemRemoved(position)
+
+                Toast.makeText(
+                    this@MainActivity,
+                    "\"${removedItem.title}\" 삭제됨",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dx: Float,
+                dy: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                val itemView = viewHolder.itemView
+                val icon = deleteIcon
+
+                if(actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    // 오른쪽 스와이프
+                    if(dx < 0) {
+                        background.setBounds(
+                            itemView.right + dx.toInt(),
+                            itemView.top,
+                            itemView.right,
+                            itemView.bottom)
+                        background.draw(c)
+
+                        icon?.let {
+                            val iconMargin = (itemView.height - it.intrinsicHeight) / 2
+                            val iconTop = itemView.top + (itemView.height - it.intrinsicHeight) / 2
+                            val iconBottom = iconTop + it.intrinsicHeight
+                            val iconRight = itemView.right - iconMargin
+                            val iconLeft = iconRight - it.intrinsicWidth
+
+                            it.setBounds(iconLeft, iconTop, iconRight, iconBottom)
+                            it.draw(c)
+                        }
+                    } else {
+                        background.setBounds(0, 0, 0, 0)
+                    }
+
+                    super.onChildDraw(
+                        c,
+                        recyclerView,
+                        viewHolder,
+                        dx,
+                        dy,
+                        actionState,
+                        isCurrentlyActive
+                    )
+                }
+            }
+        }
+        ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.rvTodo)
     }
 
     private fun initInsets() {
