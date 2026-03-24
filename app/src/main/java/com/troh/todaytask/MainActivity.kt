@@ -2,27 +2,29 @@ package com.troh.todaytask
 
 import android.graphics.Canvas
 import android.os.Bundle
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.troh.todaytask.data.local.AppDatabase
 import com.troh.todaytask.databinding.ActivityMainBinding
 import com.troh.todaytask.feature.today.AddTaskBottomSheet
-import com.troh.todaytask.feature.today.TodoItem
+import com.troh.todaytask.feature.today.TodoEntity
 import com.troh.todaytask.feature.today.adapter.TodoAdapter
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var todoAdapter: TodoAdapter
-    private var todoList = mutableListOf<TodoItem>()
+    private var todoList = mutableListOf<TodoEntity>()
+    private val db by lazy { AppDatabase.getDatabase(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,16 @@ class MainActivity : AppCompatActivity() {
         initBottomNavigation()
         initListeners()
         initTouchHelper()
+        loadTodos()
+    }
+
+    private fun loadTodos() {
+        lifecycleScope.launch {
+            val todos = db.todoDao().getAllTodos()
+            todoList.clear()
+            todoList.addAll(todos)
+            todoAdapter.updateList(todos)
+        }
     }
 
     private fun initTouchHelper() {
@@ -59,14 +71,16 @@ class MainActivity : AppCompatActivity() {
                 val position = viewHolder.adapterPosition
                 val removedItem = todoList[position]
 
-                todoList.removeAt(position)
-                todoAdapter.notifyItemRemoved(position)
+                lifecycleScope.launch {
+                    db.todoDao().delete(removedItem)
+                    loadTodos()
 
-                Toast.makeText(
-                    this@MainActivity,
-                    "\"${removedItem.title}\" 삭제됨",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        "\"${removedItem.title}\" 삭제됨",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
 
             override fun onChildDraw(
@@ -129,24 +143,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        todoList = mutableListOf(
-            TodoItem("프로젝트 제안서 검토"),
-            TodoItem("식료품 사기"),
-            TodoItem("은행 전화하기"),
-            TodoItem("아침 요가 세션", true),
-            TodoItem("회의 발표 자료 준비"),
-            TodoItem("프로젝트 제안서 검토"),
-            TodoItem("식료품 사기"),
-            TodoItem("은행 전화하기"),
-            TodoItem("아침 요가 세션", true),
-            TodoItem("회의 발표 자료 준비"),
-            TodoItem("식료품 사기"),
-            TodoItem("은행 전화하기"),
-            TodoItem("아침 요가 세션", true),
-            TodoItem("회의 발표 자료 준비")
-        )
-
-        todoAdapter = TodoAdapter(todoList)
+        todoAdapter = TodoAdapter(todoList) { item, isChecked ->
+            lifecycleScope.launch {
+                val updatedItem = item.copy(isDone = isChecked)
+                db.todoDao().update(updatedItem)
+                loadTodos()
+            }
+        }
 
         binding.rvTodo.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
@@ -192,32 +195,12 @@ class MainActivity : AppCompatActivity() {
         ) { _, bundle ->
             val text = bundle.getString(AddTaskBottomSheet.BUNDLE_KEY_TASK).orEmpty()
             if (text.isNotBlank()) {
-                todoList.add(0, TodoItem(text))
-                todoAdapter.notifyItemInserted(0)
-                binding.rvTodo.scrollToPosition(0)
-            }
-        }
-    }
-
-    private fun showAddTodoDialog() {
-        val editText = EditText(this).apply {
-            hint = "할 일을 입력하세요"
-            setSingleLine(true)
-            setPadding(50, 40, 50, 40)
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("할 일 추가")
-            .setView(editText)
-            .setPositiveButton("추가") { _, _ ->
-                val text = editText.text.toString().trim()
-                if (text.isNotEmpty()) {
-                    todoList.add(0, TodoItem(text))
-                    todoAdapter.notifyItemInserted(0)
+                lifecycleScope.launch {
+                    db.todoDao().insert(TodoEntity(title = text))
+                    loadTodos()
                     binding.rvTodo.scrollToPosition(0)
                 }
             }
-            .setNegativeButton("취소", null)
-            .show()
+        }
     }
 }

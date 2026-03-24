@@ -5,14 +5,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.troh.todaytask.databinding.ItemTodoBinding
-import com.troh.todaytask.feature.today.TodoItem
+import com.troh.todaytask.feature.today.TodoEntity
 
 /**
  * RecyclerView에 들어갈 데이터를 받아 (item_todo.xml)에 연결하여 데이터를 노출하고,
  * 체크박스 클릭 같은 데이터 이벤트를 처리함
  */
 class TodoAdapter (
-    private val items: MutableList<TodoItem>
+    private val items: MutableList<TodoEntity>,
+    private val onTodoChecked: (TodoEntity, Boolean) -> Unit
 ) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
 
     /**
@@ -24,14 +25,15 @@ class TodoAdapter (
         /**
          * ViewHolder에 데이터를 연결함
          */
-        fun bind(item: TodoItem) {
+        fun bind(item: TodoEntity) {
             binding.tvTodoTitle.text = item.title
             binding.checkTodo.isChecked = item.isDone
             updateTextStyle(item.isDone)
 
             binding.checkTodo.setOnClickListener {
-                item.isDone = binding.checkTodo.isChecked
+                val isChecked = binding.checkTodo.isChecked
                 updateTextStyle(item.isDone)
+                onTodoChecked(item, isChecked)
             }
         }
 
@@ -69,8 +71,9 @@ class TodoAdapter (
 
     override fun getItemCount(): Int = items.size
 
-    fun addItem(item: TodoItem) {
-        items.add(item)
-        notifyItemInserted(items.lastIndex)
+    fun updateList(newItems: List<TodoEntity>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
     }
 }
