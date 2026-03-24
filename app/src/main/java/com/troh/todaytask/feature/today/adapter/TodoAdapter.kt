@@ -13,7 +13,8 @@ import com.troh.todaytask.feature.today.TodoEntity
  */
 class TodoAdapter (
     private val items: MutableList<TodoEntity>,
-    private val onTodoChecked: (TodoEntity, Boolean) -> Unit
+    private val onTodoChecked: (TodoEntity, Boolean) -> Unit,
+    private val onTodoTextClicked: (TodoEntity) -> Unit
 ) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
 
     /**
@@ -34,6 +35,10 @@ class TodoAdapter (
                 val isChecked = binding.checkTodo.isChecked
                 updateTextStyle(item.isDone)
                 onTodoChecked(item, isChecked)
+            }
+
+            binding.tvTodoTitle.setOnClickListener {
+                onTodoTextClicked(item)
             }
         }
 

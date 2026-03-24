@@ -143,13 +143,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView() {
-        todoAdapter = TodoAdapter(todoList) { item, isChecked ->
-            lifecycleScope.launch {
-                val updatedItem = item.copy(isDone = isChecked)
-                db.todoDao().update(updatedItem)
-                loadTodos()
+        todoAdapter = TodoAdapter(
+            items = todoList,
+            onTodoChecked =  { item, isChecked ->
+                lifecycleScope.launch {
+                    val updatedItem = item.copy(isDone = isChecked)
+                    db.todoDao().update(updatedItem)
+                    loadTodos()
+                }
+            },
+            onTodoTextClicked = { item ->
+                AddTaskBottomSheet
+                    .newInstance(taskId = item.id, taskText = item.title)
+                    .show(supportFragmentManager, AddTaskBottomSheet.TAG)
             }
-        }
+        )
 
         binding.rvTodo.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
@@ -185,7 +193,9 @@ class MainActivity : AppCompatActivity() {
     private fun initListeners() {
         // 할일 추가 팝업 버튼
         binding.fabAdd.setOnClickListener {
-            AddTaskBottomSheet().show(supportFragmentManager, AddTaskBottomSheet.TAG)
+            AddTaskBottomSheet
+                .newInstance()
+                .show(supportFragmentManager, AddTaskBottomSheet.TAG)
         }
 
         // 할일추가 클릭시 리스트에 추가
@@ -194,12 +204,22 @@ class MainActivity : AppCompatActivity() {
             this
         ) { _, bundle ->
             val text = bundle.getString(AddTaskBottomSheet.BUNDLE_KEY_TASK).orEmpty()
-            if (text.isNotBlank()) {
-                lifecycleScope.launch {
+            if(text.isBlank()) return@setFragmentResultListener
+
+            val hasTaskId = bundle.containsKey(AddTaskBottomSheet.BUNDLE_KEY_TASK_ID)
+            val taskId = bundle.getLong(AddTaskBottomSheet.BUNDLE_KEY_TASK_ID, -1L)
+
+            lifecycleScope.launch {
+                if(hasTaskId && taskId != -1L) {
+                    val target = todoList.firstOrNull{it.id == taskId}
+                    if (target != null) {
+                        db.todoDao().update(target.copy(title = text))
+                    }
+                } else {
                     db.todoDao().insert(TodoEntity(title = text))
-                    loadTodos()
                     binding.rvTodo.scrollToPosition(0)
                 }
+                loadTodos()
             }
         }
     }

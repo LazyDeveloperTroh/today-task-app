@@ -34,7 +34,14 @@ class AddTaskBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val taskText = arguments?.getString(ARG_TASK_TEXT).orEmpty()
+        val isEditMode = arguments?.containsKey(ARG_TASK_ID) == true
+
+        binding.etTask.setText(taskText)
         binding.etTask.requestFocus()
+        binding.etTask.setSelection(taskText.length)
+        binding.btnSave.text = if(isEditMode) "수정" else "저장"
+
         binding.btnSave.setOnClickListener {
             saveTask()
         }
@@ -50,12 +57,15 @@ class AddTaskBottomSheet : BottomSheetDialogFragment() {
 
     private fun saveTask() {
         val text = binding.etTask.text?.toString()?.trim().orEmpty()
-        if(text.isEmpty()) return
+        if (text.isEmpty()) return
 
-        parentFragmentManager.setFragmentResult(
-            REQUEST_KEY,
-            bundleOf(BUNDLE_KEY_TASK to text)
-        )
+        val result = bundleOf(BUNDLE_KEY_TASK to text)
+
+        if (arguments?.containsKey(ARG_TASK_ID) == true) {
+            result.putLong(BUNDLE_KEY_TASK_ID, arguments?.getLong(ARG_TASK_ID) ?: -1L)
+        }
+
+        parentFragmentManager.setFragmentResult(REQUEST_KEY, result)
         dismiss()
     }
 
@@ -68,5 +78,22 @@ class AddTaskBottomSheet : BottomSheetDialogFragment() {
         const val TAG = "AddTaskBottomSheet"
         const val REQUEST_KEY = "add_task_request"
         const val BUNDLE_KEY_TASK = "task"
+
+        /**
+         * 수정모드 비교를 위한 TASK ID
+         */
+        const val BUNDLE_KEY_TASK_ID = "task_id"
+        private const val ARG_TASK_ID = "arg_task_id"
+        private const val ARG_TASK_TEXT = "arg_task_text"
+
+        fun newInstance(taskId: Long? = null, taskText: String = ""): AddTaskBottomSheet {
+            return AddTaskBottomSheet().apply {
+                arguments = bundleOf(ARG_TASK_TEXT to taskText).apply {
+                    if (taskId != null) {
+                        putLong(ARG_TASK_ID, taskId)
+                    }
+                }
+            }
+        }
     }
 }
