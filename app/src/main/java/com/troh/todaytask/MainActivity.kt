@@ -19,6 +19,7 @@ import com.troh.todaytask.feature.today.AddTaskBottomSheet
 import com.troh.todaytask.feature.today.TodoEntity
 import com.troh.todaytask.feature.today.adapter.TodoAdapter
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -216,11 +217,27 @@ class MainActivity : AppCompatActivity() {
                         db.todoDao().update(target.copy(title = text))
                     }
                 } else {
-                    db.todoDao().insert(TodoEntity(title = text))
+                    val todo = TodoEntity(
+                        title = text,
+                        isDone = false,
+                        scheduledDate = getTodayEndMillis(),
+                        dueDate = null
+                    )
+
+                    db.todoDao().insert(todo)
                     binding.rvTodo.scrollToPosition(0)
                 }
                 loadTodos()
             }
         }
+    }
+
+    private fun getTodayEndMillis(): Long {
+        return Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
     }
 }

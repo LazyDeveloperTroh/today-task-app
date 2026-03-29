@@ -8,5 +8,7 @@ data class TodoEntity (
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val title: String,
-    val isDone: Boolean = false
+    val isDone: Boolean = false,
+    val scheduledDate: Long? = null,
+    val dueDate: Long? = null
 )
