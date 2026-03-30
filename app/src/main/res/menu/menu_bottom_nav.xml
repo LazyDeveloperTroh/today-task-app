@@ -3,15 +3,10 @@
     <item
         android:id="@+id/menu_todo"
         android:icon="@android:drawable/ic_menu_agenda"
-        android:title="할일" />
+        android:title="오늘할일" />
 
     <item
-        android:id="@+id/menu_project"
-        android:icon="@android:drawable/ic_menu_sort_by_size"
-        android:title="프로젝트" />
-
-    <item
-        android:id="@+id/menu_calendar"
-        android:icon="@android:drawable/ic_menu_my_calendar"
-        android:title="달력" />
+        android:id="@+id/menu_history"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="기록" />
 </menu>
