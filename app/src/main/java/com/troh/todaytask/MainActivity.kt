@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTodos() {
+        binding.tvDate.text = DateUtils.getTodayText()
+
         lifecycleScope.launch {
             val todos = db.todoDao().getAllTodos()
             todoList.clear()
