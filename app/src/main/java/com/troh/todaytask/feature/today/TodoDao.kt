@@ -19,4 +19,12 @@ interface TodoDao {
 
     @Update
     suspend fun update(todo: TodoEntity)
+
+    @Query("""
+        SELECT *
+        FROM todo
+        WHERE scheduledDate BETWEEN :startOfDay AND :endOfDay
+        ORDER BY scheduledDate ASC, id DESC
+    """)
+    suspend fun getTodosByScheduledDate(startOfDay: Long, endOfDay: Long): List<TodoEntity>
 }

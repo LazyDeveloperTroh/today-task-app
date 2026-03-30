@@ -43,11 +43,15 @@ class MainActivity : AppCompatActivity() {
         loadTodos()
     }
 
-    private fun loadTodos() {
+    private fun loadTodos(targetDateMillis: Long = System.currentTimeMillis()) {
         binding.tvDate.text = DateUtils.getTodayText()
 
         lifecycleScope.launch {
-            val todos = db.todoDao().getAllTodos()
+            val startDayOf = DateUtils.getStartOfDayMillis(targetDateMillis)
+            val endOfDay = DateUtils.getEndOfDayMillis(targetDateMillis)
+
+
+            val todos = db.todoDao().getTodosByScheduledDate(startDayOf, endOfDay)
             todoList.clear()
             todoList.addAll(todos)
             todoAdapter.updateList(todos)
