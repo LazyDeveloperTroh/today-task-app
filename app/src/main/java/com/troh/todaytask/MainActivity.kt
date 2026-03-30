@@ -16,8 +16,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.troh.todaytask.data.local.AppDatabase
 import com.troh.todaytask.databinding.ActivityMainBinding
 import com.troh.todaytask.feature.today.AddTaskBottomSheet
+import com.troh.todaytask.feature.today.EditTaskBottomSheet
 import com.troh.todaytask.feature.today.TodoEntity
 import com.troh.todaytask.feature.today.adapter.TodoAdapter
+import com.troh.todaytask.util.DateUtils
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -148,15 +150,20 @@ class MainActivity : AppCompatActivity() {
             items = todoList,
             onTodoChecked =  { item, isChecked ->
                 lifecycleScope.launch {
-                    val updatedItem = item.copy(isDone = isChecked)
+                    val updatedItem = item.copy(
+                        isDone = isChecked,
+                        dueDate = if(isChecked) System.currentTimeMillis() else null )
                     db.todoDao().update(updatedItem)
                     loadTodos()
                 }
             },
             onTodoTextClicked = { item ->
-                AddTaskBottomSheet
-                    .newInstance(taskId = item.id, taskText = item.title)
-                    .show(supportFragmentManager, AddTaskBottomSheet.TAG)
+                EditTaskBottomSheet(item) { updatedTodo ->
+                    lifecycleScope.launch {
+                        db.todoDao().update(updatedTodo)
+                        loadTodos()
+                    }
+                }.show(supportFragmentManager, "EditTaskBottomSheet")
             }
         )
 
@@ -220,7 +227,7 @@ class MainActivity : AppCompatActivity() {
                     val todo = TodoEntity(
                         title = text,
                         isDone = false,
-                        scheduledDate = getTodayEndMillis(),
+                        scheduledDate = DateUtils.getTodayEndMillis(),
                         dueDate = null
                     )
 
@@ -230,14 +237,5 @@ class MainActivity : AppCompatActivity() {
                 loadTodos()
             }
         }
-    }
-
-    private fun getTodayEndMillis(): Long {
-        return Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 23)
-            set(Calendar.MINUTE, 59)
-            set(Calendar.SECOND, 59)
-            set(Calendar.MILLISECOND, 999)
-        }.timeInMillis
     }
 }
