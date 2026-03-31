@@ -49,4 +49,27 @@ object DateUtils {
             set(Calendar.MILLISECOND, 999)
         }.timeInMillis
     }
+
+    fun formatDate(millis: Long): String {
+        return SimpleDateFormat("yyyy-MM-dd", Locale.KOREAN).format(Date(millis))
+    }
+
+    fun formatHistoryHeader(millis: Long): String {
+        return SimpleDateFormat("yyyy년 M월 d일 (E)", Locale.KOREAN).format(Date(millis))
+    }
+
+    fun formatTime(millis: Long?): String {
+        if (millis == null) return "-"
+        return SimpleDateFormat("a hh:mm", Locale.KOREAN).format(Date(millis))
+    }
+
+    fun getDaysAgoStartMillis(days: Int): Long {
+        return Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_MONTH, -days)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
 }
