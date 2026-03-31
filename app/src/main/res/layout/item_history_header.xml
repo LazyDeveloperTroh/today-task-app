@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="2026년 3월 9일 (월)"
-        android:textColor="#111827"
+        android:textColor="#475569"
         android:textSize="20sp"
         android:textStyle="bold" />
 

@@ -32,9 +32,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="아침 조깅 30분 완료하기"
-            android:textColor="#111827"
+            android:textColor="#475569"
             android:textSize="17sp"
-            android:textStyle="bold"
             android:lineSpacingExtra="2dp"
             android:maxLines="2" />
     </LinearLayout>
